@@ -16,18 +16,21 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-
-    const { error } = await api.POST("/auth/login", {
-      body: { email, password },
-    });
-
-    setBusy(false);
-    if (error) {
-      setError("Invalid credentials");
-      return;
+    try {
+      const { error: apiError } = await api.POST("/auth/login", {
+        body: { email, password },
+      });
+      if (apiError) {
+        setError("Invalid credentials");
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } catch {
+      setError("Network error — check connection to the server");
+    } finally {
+      setBusy(false);
     }
-    router.push("/");
-    router.refresh();
   }
 
   return (

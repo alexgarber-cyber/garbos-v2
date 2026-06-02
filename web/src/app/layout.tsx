@@ -1,15 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Outfit } from "next/font/google";
 
 import "./globals.css";
 import { LeftNav } from "@/components/LeftNav";
-
-const outfit = Outfit({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-outfit",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "garbos",
@@ -32,7 +24,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={outfit.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body>
         <div className="flex min-h-screen">
           <LeftNav />

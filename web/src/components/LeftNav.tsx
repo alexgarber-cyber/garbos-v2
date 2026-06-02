@@ -27,6 +27,9 @@ function isActive(pathname: string, href: string): boolean {
 
 export function LeftNav() {
   const pathname = usePathname();
+
+  if (pathname === "/login") return null;
+
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] p-5">
       <div className="mb-8 flex items-center gap-2 px-2">
@@ -68,11 +71,9 @@ export function LeftNav() {
           );
         })}
       </nav>
-      {pathname !== "/login" && (
-        <div className="mt-auto pt-6">
-          <LogoutButton />
-        </div>
-      )}
+      <div className="mt-auto pt-6">
+        <LogoutButton />
+      </div>
     </aside>
   );
 }
