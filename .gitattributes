@@ -1,0 +1,15 @@
+# Enforce LF line endings on checkout/commit for all text files
+* text=auto eol=lf
+
+# Explicitly LF for shell + dotfiles that break with CRLF in containers
+*.sh    text eol=lf
+*.mako  text eol=lf
+
+# Keep lockfiles out of diffs
+uv.lock          -diff
+package-lock.json -diff
+
+# Binary
+*.png binary
+*.jpg binary
+*.ico binary

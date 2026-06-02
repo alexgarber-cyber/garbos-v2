@@ -1,0 +1,51 @@
+# ---- Env / secrets ----
+.env
+.env.local
+*.env.local
+# (.env.example IS committed)
+
+# ---- Local CRM import data / spreadsheets (may contain PII) ----
+scripts/contacts_import_data.csv
+*.csv
+*.xlsx
+*.xls
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Alembic compiled artifacts (migrations themselves ARE committed)
+alembic/versions/__pycache__/
+api/alembic/versions/__pycache__/
+
+# ---- Node / Next.js ----
+node_modules/
+.next/
+out/
+build/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+next-env.d.ts
+
+# ---- Docker ----
+docker-compose.override.yml
+*.local.yml
+
+# ---- Editor / OS / tooling ----
+.DS_Store
+*.log
+.claude/
+.vscode/
+.idea/

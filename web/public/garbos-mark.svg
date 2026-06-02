@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" fill="#3B5FE5" role="img" aria-label="garbos">
+  <rect x="4" y="24" width="12" height="32" rx="6" opacity="0.3" />
+  <rect x="24" y="14" width="12" height="52" rx="6" opacity="0.55" />
+  <rect x="44" y="4" width="12" height="72" rx="6" opacity="1" />
+  <rect x="64" y="14" width="12" height="52" rx="6" opacity="0.55" />
+</svg>

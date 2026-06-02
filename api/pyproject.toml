@@ -1,0 +1,24 @@
+[project]
+name = "garbos-api"
+version = "0.1.0"
+description = "garbos-v2 API (FastAPI)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115,<0.116",
+    "uvicorn[standard]>=0.32,<0.33",
+    "sqlalchemy>=2.0,<2.1",
+    "alembic>=1.14,<1.15",
+    "psycopg[binary]>=3.2,<3.3",
+    "pydantic-settings>=2.6,<2.8",
+    "email-validator>=2.2,<3",
+    "passlib[argon2]>=1.7,<1.8",
+    "pandas>=2.0,<3.0",
+    "openpyxl>=3.1,<4.0",
+    "python-multipart>=0.0.7,<0.1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
