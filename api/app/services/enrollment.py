@@ -7,6 +7,7 @@ builder and recurrence date math without a circular import.
 
 from datetime import datetime, timedelta
 
+from app.core.dates import roll_to_weekday
 from app.models.action_chain import ActionChain
 from app.models.chain_step import ChainStep
 from app.models.contact import Contact
@@ -44,7 +45,8 @@ def build_chain_from_sequence(
     """Build (but do not persist) an ActionChain enrollment from a sequence.
 
     Step ``due_date``s are ``base_date`` plus the cumulative ``delay_days`` of
-    each sequence step (day 0 = ``base_date``).
+    each sequence step (day 0 = ``base_date``), rolled forward off weekends so
+    no step is due on a Sat/Sun.
     """
     chain = ActionChain(
         title=f"{seq.name} — {_contact_name(contact)}",
@@ -61,7 +63,7 @@ def build_chain_from_sequence(
                 step_order=step.step_order,
                 activity_type_id=step.activity_type_id,
                 title=step.title,
-                due_date=base_date + timedelta(days=cumulative),
+                due_date=roll_to_weekday(base_date + timedelta(days=cumulative)),
                 note=build_note(step),
                 responsible_party=step.responsible_party,
             )

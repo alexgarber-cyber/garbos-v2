@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.dates import roll_to_weekday
 from app.core.deps import get_current_user
 from app.db import get_db
 from app.models.action_chain import ActionChain
@@ -450,13 +451,14 @@ def _reschedule_remaining_steps(
 
     Spacing is read from each step's current ``due_date`` relative to the completed
     step's scheduled ``due_date`` (ChainStep has no ``delay_days``). Ordering is by
-    ``step_order``; earlier/overdue steps are left untouched.
+    ``step_order``; earlier/overdue steps are left untouched. Rebased dates that
+    land on a weekend roll forward to the following Monday.
     """
     reference_due = completed_step.due_date
     for s in chain.steps:
         if s.completed or s.step_order <= completed_step.step_order:
             continue
-        s.due_date = now + (s.due_date - reference_due)
+        s.due_date = roll_to_weekday(now + (s.due_date - reference_due))
 
 
 def _maybe_reenroll(db: Session, chain: ActionChain, now: datetime) -> None:
