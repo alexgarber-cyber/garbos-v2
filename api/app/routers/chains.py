@@ -386,6 +386,7 @@ def complete_step(
     now = datetime.now(timezone.utc)
     step.completed = True
     step.completed_at = now
+    _reschedule_remaining_steps(chain, step, now)
 
     # A deal-linked chain inherits the deal's contact + company so its activity
     # surfaces on every feed even when the chain itself wasn't linked to them.
@@ -439,6 +440,23 @@ def complete_step(
 
     db.commit()
     return _to_response(_get_or_404(db, chain_id))
+
+
+def _reschedule_remaining_steps(
+    chain: ActionChain, completed_step: ChainStep, now: datetime
+) -> None:
+    """Rebase incomplete steps after ``completed_step`` onto the actual completion
+    time, preserving each step's original spacing.
+
+    Spacing is read from each step's current ``due_date`` relative to the completed
+    step's scheduled ``due_date`` (ChainStep has no ``delay_days``). Ordering is by
+    ``step_order``; earlier/overdue steps are left untouched.
+    """
+    reference_due = completed_step.due_date
+    for s in chain.steps:
+        if s.completed or s.step_order <= completed_step.step_order:
+            continue
+        s.due_date = now + (s.due_date - reference_due)
 
 
 def _maybe_reenroll(db: Session, chain: ActionChain, now: datetime) -> None:
