@@ -6,6 +6,8 @@ import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { ActivityRow } from "@/components/ActivityLog";
 import { Field, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Activity = components["schemas"]["ActivityResponse"];
 type ActivityType = components["schemas"]["ActivityTypeResponse"];
@@ -130,7 +132,7 @@ export default function ActivitiesPage() {
         contact_id: contactId ? Number(contactId) : null,
         company_id: companyId ? Number(companyId) : null,
         deal_id: null,
-        note: note.trim() || null,
+        note: htmlToNullable(note),
         voicemail: isCall ? voicemail : null,
         occurred_at: occurredAt ? new Date(occurredAt).toISOString() : null,
       },
@@ -225,12 +227,7 @@ export default function ActivitiesPage() {
           )}
 
           <Field label="Note">
-            <textarea
-              className={`${inputClass} w-full`}
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            <RichTextEditor value={note} onChange={setNote} />
           </Field>
 
           {formError && <p className="text-sm text-red-600">{formError}</p>}

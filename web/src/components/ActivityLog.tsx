@@ -6,6 +6,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { Field, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Activity = components["schemas"]["ActivityResponse"];
 type ActivityType = components["schemas"]["ActivityTypeResponse"];
@@ -76,7 +79,7 @@ export function ActivityRow({
             {formatWhen(activity.occurred_at)}
           </span>
         </div>
-        {activity.note && <p className="mt-1 text-sm">{activity.note}</p>}
+        <RichTextContent html={activity.note} className="mt-1" />
         {message && (
           <p className="mt-1 whitespace-pre-wrap rounded-[var(--radius-base)] bg-[var(--color-surface)] px-3 py-2 text-sm">
             {shownMessage}
@@ -210,7 +213,7 @@ export function ActivityLog({
         contact_id: contactId ?? null,
         company_id: companyId ?? null,
         deal_id: dealId ?? null,
-        note: note.trim() || null,
+        note: htmlToNullable(note),
         voicemail: isCall ? voicemail : null,
         occurred_at: occurredAt ? new Date(occurredAt).toISOString() : null,
       },
@@ -277,12 +280,7 @@ export function ActivityLog({
           )}
 
           <Field label="Note">
-            <textarea
-              className={`${inputClass} w-full`}
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+            <RichTextEditor value={note} onChange={setNote} />
           </Field>
 
           {error && <p className="text-sm text-red-600">{error}</p>}

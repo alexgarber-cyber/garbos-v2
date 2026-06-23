@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
@@ -185,6 +186,7 @@ export default function LeadsPage() {
         },
       });
       taskCreated = !res.error;
+      if (taskCreated) toast.success("Task added");
     }
     const ok =
       p.kind === "contact"

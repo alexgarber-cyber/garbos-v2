@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 import { LeftNav } from "@/components/LeftNav";
@@ -30,6 +31,18 @@ export default function RootLayout({
           <LeftNav />
           <main className="flex-1 p-10">{children}</main>
         </div>
+        <Toaster
+          position="bottom-right"
+          duration={2500}
+          toastOptions={{
+            style: {
+              background: "var(--color-bg)",
+              color: "var(--color-fg)",
+              border: "1px solid var(--color-border)",
+              borderRadius: "var(--radius-base)",
+            },
+          }}
+        />
       </body>
     </html>
   );

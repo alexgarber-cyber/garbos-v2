@@ -10,11 +10,18 @@
     "gen:api": "openapi-typescript http://localhost:8000/openapi.json -o ./src/lib/api/schema.d.ts"
   },
   "dependencies": {
+    "@tiptap/extension-highlight": "^3.27.1",
+    "@tiptap/extension-underline": "^3.27.1",
+    "@tiptap/pm": "^3.27.1",
+    "@tiptap/react": "^3.27.1",
+    "@tiptap/starter-kit": "^3.27.1",
+    "isomorphic-dompurify": "^3.18.0",
     "next": "16.2.6",
     "openapi-fetch": "^0.13.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",

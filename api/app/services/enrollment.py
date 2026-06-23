@@ -27,11 +27,28 @@ RECURRENCE_TYPES = (
 # How many months each non-day-based cadence advances per interval unit.
 _MONTHS_PER_UNIT = {"monthly": 1, "quarterly": 3, "yearly": 12}
 
+# Canonical time-of-day for every generated step ``due_date``. Pinning a fixed
+# midday-UTC instant keeps a due date on its intended *calendar day* across US/EU
+# local zones, instead of inheriting the arbitrary clock-time of enrollment or of
+# a completion (which otherwise drifts the displayed day across a local-midnight
+# boundary, and re-drifts on each cascade). See ``_reschedule_remaining_steps``
+# in ``app/routers/chains.py``.
+DUE_HOUR_UTC = 12
+
+
+def at_due_time(dt: datetime) -> datetime:
+    """Normalise ``dt`` to the canonical due time-of-day (noon UTC), keeping its date."""
+    return dt.replace(hour=DUE_HOUR_UTC, minute=0, second=0, microsecond=0)
+
 
 def build_note(step: SequenceStep) -> str | None:
-    """Concatenate the non-empty of note_template and message_body."""
+    """Concatenate the non-empty of note_template and message_body.
+
+    Both fields hold rich-text HTML (block-level), so the fragments are joined
+    directly — each already renders as its own paragraph.
+    """
     parts = [p for p in (step.note_template, step.message_body) if p]
-    return "\n\n".join(parts) if parts else None
+    return "".join(parts) if parts else None
 
 
 def build_chain_from_sequence(
@@ -44,8 +61,9 @@ def build_chain_from_sequence(
 ) -> ActionChain:
     """Build (but do not persist) an ActionChain enrollment from a sequence.
 
-    Step ``due_date``s are ``base_date`` plus the cumulative ``delay_days`` of
-    each sequence step (day 0 = ``base_date``), rolled forward off weekends so
+    Step ``due_date``s are ``base_date``'s day at the canonical due time (noon
+    UTC, via :func:`at_due_time`) plus the cumulative ``delay_days`` of each
+    sequence step (day 0 = ``base_date``), then rolled forward off weekends so
     no step is due on a Sat/Sun.
     """
     chain = ActionChain(
@@ -55,6 +73,7 @@ def build_chain_from_sequence(
         company_id=company_id,
         owner_id=owner_id,
     )
+    anchor = at_due_time(base_date)
     cumulative = 0
     for step in seq.steps:
         cumulative += step.delay_days
@@ -63,7 +82,7 @@ def build_chain_from_sequence(
                 step_order=step.step_order,
                 activity_type_id=step.activity_type_id,
                 title=step.title,
-                due_date=roll_to_weekday(base_date + timedelta(days=cumulative)),
+                due_date=roll_to_weekday(anchor + timedelta(days=cumulative)),
                 note=build_note(step),
                 responsible_party=step.responsible_party,
             )

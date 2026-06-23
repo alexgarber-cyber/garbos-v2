@@ -16,6 +16,9 @@ import {
   btnSecondary,
   inputClass,
 } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Chain = components["schemas"]["ChainResponse"];
 type ActivityType = components["schemas"]["ActivityTypeResponse"];
@@ -98,7 +101,7 @@ export default function ChainDetailPage() {
         title: stepTitle.trim() || null,
         due_date: new Date(dueDate).toISOString(),
         responsible_party: responsible,
-        note: note.trim() || null,
+        note: htmlToNullable(note),
       },
     });
     setSavingStep(false);
@@ -251,12 +254,7 @@ export default function ChainDetailPage() {
               </Field>
             </div>
             <Field label="Note">
-              <textarea
-                className={`${inputClass} w-full`}
-                rows={2}
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
+              <RichTextEditor value={note} onChange={setNote} />
             </Field>
             <div className="flex items-center gap-3">
               <button type="submit" disabled={savingStep} className={btnPrimary}>
@@ -303,7 +301,7 @@ export default function ChainDetailPage() {
                         : formatDue(step.due_date)}
                     </span>
                   </div>
-                  {step.note && <p className="mt-1 text-sm">{step.note}</p>}
+                  <RichTextContent html={step.note} className="mt-1" />
                   {step.advances_stage_to && (
                     <p className="mt-1 text-xs text-[var(--color-muted)]">
                       Advances deal → {step.advances_stage_to}

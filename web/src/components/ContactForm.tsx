@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { Field, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Contact = components["schemas"]["ContactResponse"];
 type Company = components["schemas"]["CompanyResponse"];
@@ -89,7 +91,7 @@ export function ContactForm({
       phone: values.phone.trim() || null,
       mobile: values.mobile.trim() || null,
       linkedin_url: values.linkedin_url.trim() || null,
-      notes: values.notes.trim() || null,
+      notes: htmlToNullable(values.notes),
       company_id: companyId,
     };
 
@@ -158,12 +160,7 @@ export function ContactForm({
       </div>
 
       <Field label="Notes">
-        <textarea
-          className={`${inputClass} w-full`}
-          rows={4}
-          value={values.notes}
-          onChange={(e) => set("notes", e.target.value)}
-        />
+        <RichTextEditor value={values.notes} onChange={(html) => set("notes", html)} />
       </Field>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

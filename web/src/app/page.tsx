@@ -18,6 +18,8 @@ import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { PageHeader } from "@/components/ui";
 import { TypeBadge, formatDue } from "@/components/chainUi";
+import { RichTextContent } from "@/components/RichTextContent";
+import { htmlIsBlank } from "@/components/richText";
 
 type Dashboard = components["schemas"]["DashboardResponse"];
 type Period = "day" | "week" | "month" | "year";
@@ -203,9 +205,13 @@ export default function DashboardPage() {
                     className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 text-sm"
                   >
                     <TypeBadge name={a.activity_type_name} />
-                    <span className="flex-1 min-w-[12rem]">
-                      {a.note ?? <span className="text-[var(--color-muted)]">—</span>}
-                    </span>
+                    <div className="flex-1 min-w-[12rem]">
+                      {htmlIsBlank(a.note) ? (
+                        <span className="text-[var(--color-muted)]">—</span>
+                      ) : (
+                        <RichTextContent html={a.note} />
+                      )}
+                    </div>
                     <span className="flex items-center gap-2 text-xs text-[var(--color-muted)]">
                       {a.contact_id && a.contact_name && (
                         <Link

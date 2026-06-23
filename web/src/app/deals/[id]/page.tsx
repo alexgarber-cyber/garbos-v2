@@ -15,6 +15,7 @@ import {
   btnSecondary,
   inputClass,
 } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
 
 type Deal = components["schemas"]["DealResponse"];
 type PipelineStage = components["schemas"]["PipelineStageResponse"];
@@ -194,7 +195,9 @@ export default function DealDetailPage() {
         {deal.notes && (
           <div className="mt-4">
             <dt className="text-xs font-medium text-[var(--color-muted)]">Notes</dt>
-            <dd className="text-sm">{deal.notes}</dd>
+            <dd className="text-sm">
+              <RichTextContent html={deal.notes} />
+            </dd>
           </div>
         )}
 

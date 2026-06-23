@@ -15,6 +15,7 @@ import {
   btnPrimary,
   btnSecondary,
 } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
 
 type Company = components["schemas"]["CompanyResponse"];
 type Contact = components["schemas"]["ContactResponse"];
@@ -116,7 +117,9 @@ export default function CompanyDetailPage() {
         {company.description && (
           <div className="mt-4">
             <dt className="text-xs font-medium text-[var(--color-muted)]">Description</dt>
-            <dd className="text-sm">{company.description}</dd>
+            <dd className="text-sm">
+              <RichTextContent html={company.description} />
+            </dd>
           </div>
         )}
       </section>

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -446,19 +446,29 @@ def complete_step(
 def _reschedule_remaining_steps(
     chain: ActionChain, completed_step: ChainStep, now: datetime
 ) -> None:
-    """Rebase incomplete steps after ``completed_step`` onto the actual completion
-    time, preserving each step's original spacing.
+    """Rebase incomplete steps after ``completed_step`` onto the completion *day*,
+    preserving each step's original spacing.
 
-    Spacing is read from each step's current ``due_date`` relative to the completed
-    step's scheduled ``due_date`` (ChainStep has no ``delay_days``). Ordering is by
-    ``step_order``; earlier/overdue steps are left untouched. Rebased dates that
-    land on a weekend roll forward to the following Monday.
+    The new due dates are anchored on the completion date at the canonical due
+    time (noon UTC, via :func:`~app.services.enrollment.at_due_time`) and offset
+    by whole-day spacing read from each step's current ``due_date`` relative to
+    the completed step (ChainStep has no ``delay_days``). Pinning the time-of-day
+    keeps a due date on its intended calendar day — using ``now`` verbatim would
+    bleed the completion clock-time in and drift the displayed day. Dates that
+    land on a weekend then roll forward to the following Monday. Ordering is by
+    ``step_order``; earlier/overdue steps are left untouched.
     """
-    reference_due = completed_step.due_date
+    # Local import: the enrollment service imports this module (see _maybe_reenroll).
+    from app.services.enrollment import at_due_time
+
+    anchor = at_due_time(now)
+    reference_date = completed_step.due_date.date()
     for s in chain.steps:
         if s.completed or s.step_order <= completed_step.step_order:
             continue
-        s.due_date = roll_to_weekday(now + (s.due_date - reference_due))
+        s.due_date = roll_to_weekday(
+            anchor + timedelta(days=(s.due_date.date() - reference_date).days)
+        )
 
 
 def _maybe_reenroll(db: Session, chain: ActionChain, now: datetime) -> None:

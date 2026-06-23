@@ -28,3 +28,70 @@ body {
 * {
   box-sizing: border-box;
 }
+
+/* Rich-text notes — shared by the TipTap editor surface and the read-back
+   renderer (RichTextContent) so authored notes look identical in both. Tailwind
+   preflight strips list/heading styling, so re-apply the bits the editor emits. */
+.richtext :where(p, ul, ol, blockquote, h1, h2, h3):not(:first-child) {
+  margin-top: 0.5rem;
+}
+.richtext p {
+  margin: 0;
+}
+.richtext ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.richtext ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+}
+.richtext h1 {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.richtext h2 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.richtext h3 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.richtext strong,
+.richtext b {
+  font-weight: 600;
+}
+.richtext em,
+.richtext i {
+  font-style: italic;
+}
+.richtext u {
+  text-decoration: underline;
+}
+.richtext s {
+  text-decoration: line-through;
+}
+.richtext mark {
+  background: #fde68a;
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+.richtext a {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.richtext blockquote {
+  border-left: 2px solid var(--color-border);
+  padding-left: 0.75rem;
+  color: var(--color-muted);
+}
+.richtext code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0 0.25rem;
+}

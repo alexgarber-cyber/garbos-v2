@@ -6,6 +6,8 @@ import { Suspense, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { Field, PageHeader, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Contact = components["schemas"]["ContactResponse"];
 type Company = components["schemas"]["CompanyResponse"];
@@ -107,7 +109,7 @@ function NewChainInner() {
         title: s.title.trim() || null,
         due_date: new Date(s.due_date).toISOString(),
         responsible_party: s.responsible_party,
-        note: s.note.trim() || null,
+        note: htmlToNullable(s.note),
         advances_stage_to: s.advances_stage_to || null,
       })),
     };
@@ -258,11 +260,9 @@ function NewChainInner() {
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4">
                   <Field label="Note">
-                    <textarea
-                      className={`${inputClass} w-full`}
-                      rows={2}
+                    <RichTextEditor
                       value={step.note}
-                      onChange={(e) => updateStep(i, { note: e.target.value })}
+                      onChange={(html) => updateStep(i, { note: html })}
                     />
                   </Field>
                   {dealId && (

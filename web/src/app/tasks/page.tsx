@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { ResponsibleTag, TypeBadge, formatDue } from "@/components/chainUi";
 import { Field, PageHeader, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Task = components["schemas"]["TaskResponse"];
 type Contact = components["schemas"]["ContactResponse"];
@@ -106,7 +110,7 @@ export default function TasksPage() {
         contact_id: contactId ? Number(contactId) : null,
         company_id: companyId ? Number(companyId) : null,
         responsible_party: responsible,
-        note: note.trim() || null,
+        note: htmlToNullable(note),
       },
     });
     setBusy(false);
@@ -114,6 +118,7 @@ export default function TasksPage() {
       setError("Could not add task");
       return;
     }
+    toast.success("Task added");
     setTitle("");
     setContactId("");
     setCompanyId("");
@@ -195,9 +200,10 @@ export default function TasksPage() {
                     </Link>
                   )}
                 </div>
-                {t.note && (
-                  <p className="mt-1 text-xs text-[var(--color-muted)]">{t.note}</p>
-                )}
+                <RichTextContent
+                  html={t.note}
+                  className="mt-1 text-xs text-[var(--color-muted)]"
+                />
               </div>
               <button
                 type="button"
@@ -301,12 +307,10 @@ export default function TasksPage() {
           </Field>
         </div>
         <Field label="Notes">
-          <textarea
-            className={`${inputClass} w-full`}
-            rows={2}
-            placeholder="Optional context for this task…"
+          <RichTextEditor
             value={note}
-            onChange={(e) => setNote(e.target.value)}
+            onChange={setNote}
+            placeholder="Optional context for this task…"
           />
         </Field>
         {error && <p className="text-sm text-red-600">{error}</p>}

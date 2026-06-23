@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { Field, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Deal = components["schemas"]["DealResponse"];
 type Company = components["schemas"]["CompanyResponse"];
@@ -89,7 +91,7 @@ export function DealForm({
       pipeline_stage_id: Number(values.pipeline_stage_id),
       amount: values.amount.trim() ? Number(values.amount) : null,
       expected_close_date: values.expected_close_date || null,
-      notes: values.notes.trim() || null,
+      notes: htmlToNullable(values.notes),
     };
 
     const res = initial
@@ -183,12 +185,7 @@ export function DealForm({
       </div>
 
       <Field label="Notes">
-        <textarea
-          className={`${inputClass} w-full`}
-          rows={4}
-          value={values.notes}
-          onChange={(e) => set("notes", e.target.value)}
-        />
+        <RichTextEditor value={values.notes} onChange={(html) => set("notes", html)} />
       </Field>
 
       {error && <p className="text-sm text-red-600">{error}</p>}

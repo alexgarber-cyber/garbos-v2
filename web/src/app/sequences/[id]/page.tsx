@@ -9,6 +9,7 @@ import type { components } from "@/lib/api/schema";
 import { DeleteButton } from "@/components/DeleteButton";
 import { ResponsibleTag, TypeBadge } from "@/components/chainUi";
 import { StatusBadge, btnSecondary } from "@/components/ui";
+import { RichTextContent } from "@/components/RichTextContent";
 
 type Sequence = components["schemas"]["SequenceResponse"];
 type Chain = components["schemas"]["ChainResponse"];
@@ -146,7 +147,9 @@ export default function SequenceDetailPage() {
       {sequence.description && (
         <section className="mb-8 rounded-[var(--radius-base)] border border-[var(--color-border)] p-6">
           <dt className="text-xs font-medium text-[var(--color-muted)]">Description</dt>
-          <dd className="text-sm">{sequence.description}</dd>
+          <dd className="text-sm">
+            <RichTextContent html={sequence.description} />
+          </dd>
         </section>
       )}
 
@@ -167,10 +170,11 @@ export default function SequenceDetailPage() {
                 <ResponsibleTag party={step.responsible_party} />
                 <span className="text-xs text-[var(--color-muted)]">Day {stepDays[i]}</span>
               </div>
-              {step.message_body && <p className="mt-1 text-sm">{step.message_body}</p>}
-              {step.note_template && (
-                <p className="mt-1 text-sm text-[var(--color-muted)]">{step.note_template}</p>
-              )}
+              <RichTextContent html={step.message_body} className="mt-1" />
+              <RichTextContent
+                html={step.note_template}
+                className="mt-1 text-[var(--color-muted)]"
+              />
             </li>
           ))}
         </ol>

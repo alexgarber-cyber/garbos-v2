@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { Field, btnPrimary, btnSecondary, inputClass } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Sequence = components["schemas"]["SequenceResponse"];
 type ActivityType = components["schemas"]["ActivityTypeResponse"];
@@ -153,9 +155,9 @@ export function SequenceForm({ initial }: { initial?: Sequence }) {
       activity_type_id: Number(s.activity_type_id),
       title: s.title.trim() || null,
       delay_days: Number(s.delay_days) || 0,
-      message_body: s.message_body.trim() || null,
+      message_body: htmlToNullable(s.message_body),
       responsible_party: s.responsible_party,
-      note_template: s.note_template.trim() || null,
+      note_template: htmlToNullable(s.note_template),
     }));
 
     const res = initial
@@ -163,7 +165,7 @@ export function SequenceForm({ initial }: { initial?: Sequence }) {
           params: { path: { sequence_id: initial.id } },
           body: {
             name: name.trim(),
-            description: description.trim() || null,
+            description: htmlToNullable(description),
             status,
             ...recurrence,
             steps: stepBodies,
@@ -172,7 +174,7 @@ export function SequenceForm({ initial }: { initial?: Sequence }) {
       : await api.POST("/sequences", {
           body: {
             name: name.trim(),
-            description: description.trim() || null,
+            description: htmlToNullable(description),
             status,
             ...recurrence,
             steps: stepBodies,
@@ -251,12 +253,7 @@ export function SequenceForm({ initial }: { initial?: Sequence }) {
       )}
 
       <Field label="Description">
-        <textarea
-          className={`${inputClass} w-full`}
-          rows={2}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+        <RichTextEditor value={description} onChange={setDescription} />
       </Field>
 
       <div>
@@ -356,19 +353,15 @@ export function SequenceForm({ initial }: { initial?: Sequence }) {
               </div>
               <div className="mt-4 flex flex-col gap-4">
                 <Field label="Message body">
-                  <textarea
-                    className={`${inputClass} w-full`}
-                    rows={2}
+                  <RichTextEditor
                     value={step.message_body}
-                    onChange={(e) => updateStep(i, { message_body: e.target.value })}
+                    onChange={(html) => updateStep(i, { message_body: html })}
                   />
                 </Field>
                 <Field label="Note template">
-                  <textarea
-                    className={`${inputClass} w-full`}
-                    rows={2}
+                  <RichTextEditor
                     value={step.note_template}
-                    onChange={(e) => updateStep(i, { note_template: e.target.value })}
+                    onChange={(html) => updateStep(i, { note_template: html })}
                   />
                 </Field>
               </div>

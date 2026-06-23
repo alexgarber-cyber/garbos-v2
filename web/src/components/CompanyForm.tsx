@@ -12,6 +12,8 @@ import {
   btnSecondary,
   inputClass,
 } from "@/components/ui";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { htmlToNullable } from "@/components/richText";
 
 type Company = components["schemas"]["CompanyResponse"];
 
@@ -64,7 +66,7 @@ export function CompanyForm({ initial }: { initial?: Company }) {
       hq_city: values.hq_city.trim() || null,
       hq_state: values.hq_state.trim() || null,
       hq_country: values.hq_country.trim() || null,
-      description: values.description.trim() || null,
+      description: htmlToNullable(values.description),
       phone: values.phone.trim() || null,
       lifecycle_status:
         (values.lifecycle_status || null) as components["schemas"]["CompanyCreate"]["lifecycle_status"],
@@ -144,11 +146,9 @@ export function CompanyForm({ initial }: { initial?: Company }) {
       </div>
 
       <Field label="Description">
-        <textarea
-          className={`${inputClass} w-full`}
-          rows={4}
+        <RichTextEditor
           value={values.description}
-          onChange={(e) => set("description", e.target.value)}
+          onChange={(html) => set("description", html)}
         />
       </Field>
 
