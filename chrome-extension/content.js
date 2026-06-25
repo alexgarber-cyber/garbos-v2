@@ -14,12 +14,39 @@ function scrapeText(selectors) {
   return "";
 }
 
+// Company requires navigating to the experience section rather than a simple selector,
+// because LinkedIn renders text as aria-hidden/screen-reader pairs and the top-card
+// experience component no longer exists in current LinkedIn DOM.
+function scrapeCompany() {
+  const sections = document.querySelectorAll("section[data-view-name='profile-card']");
+  const expSection = Array.from(sections).find(s => s.children[0]?.id === "experience");
+  if (expSection) {
+    const firstLi = expSection.querySelector("ul > li");
+    if (firstLi) {
+      // Yields "Google · Full-time" — split to get just the company name
+      const compEl = firstLi.querySelector("span.t-14.t-normal > span[aria-hidden='true']");
+      if (compEl) {
+        const raw = compEl.textContent.trim();
+        if (raw) return raw.split(" · ")[0].trim();
+      }
+      // Fallback: some single-role layouts put company in a bold span
+      const boldEl = firstLi.querySelector("div.t-bold > span[aria-hidden='true']");
+      if (boldEl) return boldEl.textContent.trim();
+    }
+  }
+  // Top-card fallbacks for older/alternate LinkedIn layouts
+  return scrapeText([
+    ".pv-text-details__right-panel span[aria-hidden='true']",
+    "a[data-field='experience_company_logo'] span[aria-hidden='true']",
+  ]);
+}
+
 function scrapeProfile() {
-  // Name — try multiple selectors in order of reliability
+  // Name
   const fullName = scrapeText([
+    "div.mt2.relative h1",
+    "main h1",
     "h1.text-heading-xlarge",
-    "h1.inline.t-24.v-align-middle.break-words",
-    ".pv-top-card--list > li:first-child",
     "h1",
   ]);
 
@@ -33,30 +60,20 @@ function scrapeProfile() {
 
   // Title / headline
   const title = scrapeText([
-    ".text-body-medium.break-words",
+    "div.mt2.relative div.text-body-medium.break-words",
+    "div.text-body-medium.break-words",
     "[data-field='headline']",
-    ".pv-top-card-section__headline",
-    ".ph5 .mt2 .t-black .break-words",
   ]);
 
-  // Current company — try the top-card experience highlight first, then experience section
-  const company = scrapeText([
-    // Top-card: "at Company" or inline button
-    ".pv-top-card--experience-list-item .t-bold span",
-    ".pv-top-card--experience-list .pv-top-card--experience-list-item button .t-bold span",
-    // Experience section first entry
-    "#experience ~ .pvs-list__container li:first-child .t-bold span",
-    "#experience + div li:first-child .t-bold span",
-    // Fallback: any bold text in top-card details
-    ".pv-top-card-v2-ctas ~ .mt2 a[data-field='experience_company_logo'] span",
-  ]);
+  // Current company
+  const company = scrapeCompany();
 
   // Location
   const location = scrapeText([
-    ".text-body-small.inline.t-black--light.break-words",
+    "span.text-body-small.inline.t-black--light.break-words",
+    "div.pb2.pv-text-details__left-panel span.text-body-small.inline.t-black--light.break-words",
     "[data-field='location']",
-    ".pv-top-card--list-bullet > li span",
-    ".pb2 .t-black--light span",
+    ".pv-text-details__left-panel span.text-body-small",
   ]);
 
   // LinkedIn URL — canonical from current page, strip query/hash
