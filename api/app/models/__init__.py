@@ -13,9 +13,11 @@ from app.models.close_reason import CloseReason
 from app.models.company import Company
 from app.models.contact import Contact
 from app.models.deal import Deal
+from app.models.email_ignore_entry import EmailIgnoreEntry
 from app.models.pipeline_stage import PipelineStage
 from app.models.sequence import Sequence
 from app.models.sequence_step import SequenceStep
+from app.models.unmatched_email import UnmatchedEmail
 from app.models.user import User
 
 __all__ = [
@@ -32,4 +34,6 @@ __all__ = [
     "PipelineStage",
     "CloseReason",
     "Deal",
+    "UnmatchedEmail",
+    "EmailIgnoreEntry",
 ]

@@ -1,3 +1,7 @@
+import logging
+from contextlib import asynccontextmanager
+
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -18,11 +22,44 @@ from app.routers import (
     pipeline_stages,
     sequences,
     tasks,
+    unmatched_emails,
 )
+from app.services.imap_poller import run_poll
+
+logger = logging.getLogger("app.main")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start the IMAP poller on an interval (only when IMAP is enabled)."""
+    scheduler = BackgroundScheduler(timezone="UTC")
+    if settings.imap_enabled:
+        scheduler.add_job(
+            run_poll,
+            "interval",
+            minutes=settings.imap_poll_interval_minutes,
+            id="imap_poll",
+            max_instances=1,
+            coalesce=True,
+        )
+        scheduler.start()
+        logger.info(
+            "IMAP poller started: every %s min on %s/%s",
+            settings.imap_poll_interval_minutes,
+            settings.imap_host,
+            settings.imap_mailbox,
+        )
+    else:
+        logger.info("IMAP poller disabled (IMAP_ENABLED=false)")
+    try:
+        yield
+    finally:
+        if scheduler.running:
+            scheduler.shutdown(wait=False)
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="garbos-api", version="0.1.0")
+    app = FastAPI(title="garbos-api", version="0.1.0", lifespan=lifespan)
 
     # Explicit origin + credentials so the browser sends/receives the session cookie.
     app.add_middleware(
@@ -54,6 +91,9 @@ def create_app() -> FastAPI:
     app.include_router(deals.router, prefix="/deals", tags=["deals"])
     app.include_router(dashboard.router, prefix="/dashboard", tags=["dashboard"])
     app.include_router(imports.router, prefix="/import", tags=["import"])
+    app.include_router(
+        unmatched_emails.router, prefix="/unmatched-emails", tags=["unmatched-emails"]
+    )
 
     return app
 

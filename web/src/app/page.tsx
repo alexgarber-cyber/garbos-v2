@@ -17,6 +17,7 @@ import {
 import { api } from "@/lib/api/client";
 import type { components } from "@/lib/api/schema";
 import { PageHeader } from "@/components/ui";
+import { UnmatchedEmailsCard } from "@/components/UnmatchedEmailsCard";
 import { TypeBadge, formatDue } from "@/components/chainUi";
 import { RichTextContent } from "@/components/RichTextContent";
 import { htmlIsBlank } from "@/components/richText";
@@ -167,6 +168,9 @@ export default function DashboardPage() {
               alert={data.task_counts.overdue > 0}
             />
           </div>
+
+          {/* Unmatched email review queue (renders nothing when empty) */}
+          <UnmatchedEmailsCard />
 
           {/* Period selector */}
           <div className="inline-flex w-fit overflow-hidden rounded-[var(--radius-base)] border border-[var(--color-border)]">

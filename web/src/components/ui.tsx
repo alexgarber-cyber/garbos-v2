@@ -85,7 +85,20 @@ export function EmailLink({ email }: { email: string | null | undefined }) {
   );
 }
 
-// Clickable LinkedIn link opening in a new tab; renders an em-dash when absent.
+// Coerce a user/import-supplied URL into a safe http(s) href, or null if it
+// can't be (blocks javascript:/data: and other dangerous schemes). URLs without
+// a scheme are assumed https.
+function safeHttpHref(raw: string): string | null {
+  try {
+    const parsed = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : null;
+  } catch {
+    return null;
+  }
+}
+
+// Clickable LinkedIn link opening in a new tab; renders an em-dash when absent
+// or when the stored URL isn't a safe http(s) link.
 export function LinkedInLink({
   url,
   label = "LinkedIn",
@@ -93,9 +106,10 @@ export function LinkedInLink({
   url: string | null | undefined;
   label?: string;
 }) {
-  if (!url) return <span className="text-[var(--color-muted)]">—</span>;
+  const href = url ? safeHttpHref(url) : null;
+  if (!href) return <span className="text-[var(--color-muted)]">—</span>;
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className={linkClass}>
+    <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
       {label}
     </a>
   );

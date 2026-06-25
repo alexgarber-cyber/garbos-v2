@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
+import { api } from "@/lib/api/client";
 import { LogoutButton } from "@/components/LogoutButton";
+import { UNMATCHED_CHANGED_EVENT } from "@/components/UnmatchedEmailsCard";
 
 // Tasks is the daily driver — pinned to the top. The rest are in workflow order.
 const NAV_ITEMS: { label: string; href: string }[] = [
@@ -27,6 +30,25 @@ function isActive(pathname: string, href: string): boolean {
 
 export function LeftNav() {
   const pathname = usePathname();
+  const [pendingEmails, setPendingEmails] = useState(0);
+
+  const loadCount = useCallback(async () => {
+    const { data } = await api.GET("/unmatched-emails/count");
+    setPendingEmails(data?.pending ?? 0);
+  }, []);
+
+  useEffect(() => {
+    if (pathname === "/login") return;
+    loadCount();
+    // Track the 5-min poller without a manual refresh, and react instantly to
+    // actions taken in the review card.
+    const interval = setInterval(loadCount, 60_000);
+    window.addEventListener(UNMATCHED_CHANGED_EVENT, loadCount);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener(UNMATCHED_CHANGED_EVENT, loadCount);
+    };
+  }, [pathname, loadCount]);
 
   if (pathname === "/login") return null;
 
@@ -56,17 +78,26 @@ export function LeftNav() {
       <nav className="flex flex-col gap-1">
         {NAV_ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
+          const badge = item.href === "/" && pendingEmails > 0 ? pendingEmails : 0;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`rounded-[var(--radius-base)] px-3 py-2 text-sm transition-colors ${
+              className={`flex items-center justify-between rounded-[var(--radius-base)] px-3 py-2 text-sm transition-colors ${
                 active
                   ? "bg-white font-medium text-[var(--color-accent)]"
                   : "text-[var(--color-muted)] hover:bg-white hover:text-[var(--color-fg)]"
               }`}
             >
-              {item.label}
+              <span>{item.label}</span>
+              {badge > 0 && (
+                <span
+                  className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-[var(--color-accent)] px-1.5 py-0.5 text-xs font-medium text-[var(--color-accent-fg)]"
+                  title={`${badge} unmatched email${badge === 1 ? "" : "s"} to review`}
+                >
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

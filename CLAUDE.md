@@ -40,7 +40,7 @@ All services read the root `.env` (`env_file`); `.env` is gitignored — see [.e
 
 ## Project state
 
-**Current migration level:** `0010` (`sequence_recurrence`).
+**Current migration level:** `0011` (`email_polling`).
 
 ### Features shipped (as of 2026-06-01)
 
@@ -53,6 +53,16 @@ All services read the root `.env` (`env_file`); `.env` is gitignored — see [.e
 - Lead→deal status change: auto-prompt for next task + due date
 - Task creation: notes field
 - PitchBook importer moved to `/import` page (tabs)
+- Inbound/outbound email logging via IMAP polling: APScheduler job (FastAPI
+  lifespan in [api/app/main.py](api/app/main.py)) runs
+  [api/app/services/imap_poller.py](api/app/services/imap_poller.py) every
+  `IMAP_POLL_INTERVAL_MINUTES`; matches senders/recipients to contacts and
+  auto-logs `Email` activities (with `direction`), queues unmatched ones in
+  `unmatched_emails`, and silently skips `email_ignore_list` hits. Review UI is a
+  dashboard card + LeftNav badge ([web/src/components/UnmatchedEmailsCard.tsx](web/src/components/UnmatchedEmailsCard.tsx))
+  with Add as Contact / Add as Lead / Ignore. Config: `IMAP_*` in `.env`
+  (`IMAP_ENABLED=false` disables the poller). Dedup is by RFC 5322 Message-ID +
+  IMAP `\Seen`. **Keep uvicorn at 1 worker** (a pg advisory lock guards scaling).
 
 ### In progress / next session
 

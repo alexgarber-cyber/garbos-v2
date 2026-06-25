@@ -49,6 +49,7 @@ class ActivityResponse(BaseModel):
     note: str | None
     message_sent: str | None
     voicemail: bool | None
+    direction: str | None
     occurred_at: datetime
     owner_id: int | None
     created_at: datetime
@@ -78,6 +79,7 @@ def _to_response(activity: Activity) -> ActivityResponse:
         note=activity.note,
         message_sent=activity.message_sent,
         voicemail=activity.voicemail,
+        direction=activity.direction,
         occurred_at=activity.occurred_at,
         owner_id=activity.owner_id,
         created_at=activity.created_at,

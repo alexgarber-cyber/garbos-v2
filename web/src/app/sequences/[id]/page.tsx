@@ -192,6 +192,7 @@ export default function SequenceDetailPage() {
             <thead className="bg-[var(--color-surface)] text-left text-[var(--color-muted)]">
               <tr>
                 <th className="px-4 py-2 font-medium">Contact</th>
+                <th className="px-4 py-2 font-medium">Company</th>
                 <th className="px-4 py-2 font-medium">Progress</th>
                 <th className="px-4 py-2 font-medium">Status</th>
                 {sequence.recurrence_type !== "never" && (
@@ -203,7 +204,7 @@ export default function SequenceDetailPage() {
               {enrollments.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={sequence.recurrence_type !== "never" ? 4 : 3}
+                    colSpan={sequence.recurrence_type !== "never" ? 5 : 4}
                     className="px-4 py-6 text-center text-[var(--color-muted)]"
                   >
                     No enrollments yet.
@@ -224,6 +225,9 @@ export default function SequenceDetailPage() {
                         >
                           {c.contact_name ?? c.title}
                         </Link>
+                      </td>
+                      <td className="px-4 py-2 text-[var(--color-muted)]">
+                        {c.company_name ?? "—"}
                       </td>
                       <td className="px-4 py-2 text-[var(--color-muted)]">
                         {done}/{c.steps.length}

@@ -5,8 +5,12 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-garbos}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-garbos}
       POSTGRES_DB: ${POSTGRES_DB:-garbos}
+    # Bind to loopback only: the api reaches the db via the compose network
+    # (service DNS "db:5432"); the published port is for local tooling and must
+    # NOT be exposed to the LAN. Override POSTGRES_BIND=0.0.0.0 only if you
+    # really need remote DB access (and have set a strong password).
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_BIND:-127.0.0.1}:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:

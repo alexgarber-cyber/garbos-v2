@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
@@ -133,6 +133,20 @@ def create_contact(
     db.commit()
     db.refresh(contact)
     return _to_response(contact)
+
+
+@router.get("/by-linkedin", response_model=ContactResponse | None)
+def get_contact_by_linkedin(
+    url: str = Query(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> ContactResponse | None:
+    contact = db.scalar(
+        select(Contact)
+        .options(selectinload(Contact.company))
+        .where(Contact.owner_id == user.id, Contact.linkedin_url == url)
+    )
+    return _to_response(contact) if contact else None
 
 
 @router.get("/{contact_id}", response_model=ContactResponse)

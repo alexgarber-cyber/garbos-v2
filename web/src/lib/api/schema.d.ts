@@ -665,6 +665,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/unmatched-emails": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Unmatched */
+        get: operations["list_unmatched_unmatched_emails_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unmatched-emails/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Count Pending */
+        get: operations["count_pending_unmatched_emails_count_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unmatched-emails/{email_id}/add-contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add As Contact */
+        post: operations["add_as_contact_unmatched_emails__email_id__add_contact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unmatched-emails/{email_id}/add-lead": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add As Lead */
+        post: operations["add_as_lead_unmatched_emails__email_id__add_lead_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/unmatched-emails/{email_id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ignore Email */
+        post: operations["ignore_email_unmatched_emails__email_id__ignore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -710,6 +795,8 @@ export interface components {
             message_sent: string | null;
             /** Voicemail */
             voicemail: boolean | null;
+            /** Direction */
+            direction: string | null;
             /**
              * Occurred At
              * Format: date-time
@@ -775,10 +862,44 @@ export interface components {
             /** Occurred At */
             occurred_at?: string | null;
         };
+        /** AddContactRequest */
+        AddContactRequest: {
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Linkedin Url */
+            linkedin_url?: string | null;
+            /** Company Id */
+            company_id?: number | null;
+        };
         /** AddLead */
         AddLead: {
             /** First Name */
             first_name: string;
+            /** Last Name */
+            last_name?: string | null;
+            /** Email */
+            email?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Linkedin Url */
+            linkedin_url?: string | null;
+            /** Company Name */
+            company_name: string;
+        };
+        /** AddLeadRequest */
+        AddLeadRequest: {
+            /** First Name */
+            first_name?: string | null;
             /** Last Name */
             last_name?: string | null;
             /** Email */
@@ -1233,6 +1354,11 @@ export interface components {
             /** Notes */
             notes?: string | null;
         };
+        /** CountResponse */
+        CountResponse: {
+            /** Pending */
+            pending: number;
+        };
         /** DashboardResponse */
         DashboardResponse: {
             /** Period */
@@ -1396,6 +1522,16 @@ export interface components {
             status: string;
             /** Service */
             service: string;
+        };
+        /** IgnoreRequest */
+        IgnoreRequest: {
+            /**
+             * Domain
+             * @default false
+             */
+            domain: boolean;
+            /** Note */
+            note?: string | null;
         };
         /** ImportItem */
         ImportItem: {
@@ -1736,6 +1872,33 @@ export interface components {
             company_id: number | null;
             /** Company Name */
             company_name: string | null;
+        };
+        /** UnmatchedEmailResponse */
+        UnmatchedEmailResponse: {
+            /** Id */
+            id: number;
+            /** From Address */
+            from_address: string;
+            /** To Addresses */
+            to_addresses: string | null;
+            /** Subject */
+            subject: string | null;
+            /** Body Snippet */
+            body_snippet: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Direction */
+            direction: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
         };
         /** UserResponse */
         UserResponse: {
@@ -3593,6 +3756,162 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExcelImportResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_unmatched_unmatched_emails_get: {
+        parameters: {
+            query?: {
+                status_filter?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnmatchedEmailResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    count_pending_unmatched_emails_count_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountResponse"];
+                };
+            };
+        };
+    };
+    add_as_contact_unmatched_emails__email_id__add_contact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddContactRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_as_lead_unmatched_emails__email_id__add_lead_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddLeadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ignore_email_unmatched_emails__email_id__ignore_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                email_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IgnoreRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnmatchedEmailResponse"];
                 };
             };
             /** @description Validation Error */

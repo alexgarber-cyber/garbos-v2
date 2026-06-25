@@ -20,3 +20,8 @@ class User(Base, TimestampMixin):
     session_expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+
+    # Personal API token for non-browser clients (e.g. the Chrome extension).
+    # Raw token is shown once at generation time; only the hash is persisted.
+    api_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    api_token_prefix: Mapped[str | None] = mapped_column(String(8), nullable=True)

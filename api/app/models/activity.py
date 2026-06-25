@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, OwnerMixin, TimestampMixin
@@ -40,6 +40,12 @@ class Activity(Base, TimestampMixin, OwnerMixin):
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     message_sent: Mapped[str | None] = mapped_column(Text, nullable=True)
     voicemail: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # "inbound" | "outbound" — set for emails captured by the IMAP poller.
+    direction: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    # RFC 5322 Message-ID for email activities; dedup key for the poller.
+    message_id: Mapped[str | None] = mapped_column(
+        String(998), nullable=True, unique=True, index=True
+    )
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, index=True
     )

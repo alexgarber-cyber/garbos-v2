@@ -25,3 +25,12 @@ def hash_session_token(raw_token: str) -> str:
     The token is high-entropy random, so a fast hash is appropriate here.
     """
     return hashlib.sha256(raw_token.encode()).hexdigest()
+
+
+def generate_api_token() -> str:
+    """Raw personal API token returned once at generation time (never persisted)."""
+    return secrets.token_hex(32)
+
+
+def hash_api_token(raw_token: str) -> str:
+    return hashlib.sha256(raw_token.encode()).hexdigest()
