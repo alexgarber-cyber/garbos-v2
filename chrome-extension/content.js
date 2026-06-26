@@ -89,6 +89,6 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     } catch (err) {
       sendResponse({ ok: false, error: err.message });
     }
+    return false; // scraping is synchronous; do not keep channel open
   }
-  return true; // keep channel open for async (not needed here but harmless)
 });
