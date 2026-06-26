@@ -157,8 +157,7 @@ async function init() {
   fLocation.textContent = "Loading...";
 
   console.log("[GarbOS] Sending GET_PROFILE...");
-  setTimeout(() => {
-    chrome.runtime.sendMessage({ type: "GET_PROFILE" }, async (response) => {
+  chrome.tabs.sendMessage(tab.id, { type: "GET_PROFILE" }, async (response) => {
       if (chrome.runtime.lastError) {
         console.error("[GarbOS] lastError:", chrome.runtime.lastError.message);
         showNotice("Could not read page. Try reloading the LinkedIn profile.");
@@ -210,7 +209,6 @@ async function init() {
 
       setButtons(true);
     });
-  }, 200);
 }
 
 // ── Add as Prospect ───────────────────────────────────────────────────────────
