@@ -13,18 +13,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         target: { tabId: tab.id },
         world: "MAIN",
         func: () => {
-          const nameEl = document.querySelector('a[href*="/in/"] h2');
-          if (!nameEl) return { error: 'Profile card not found' };
-          const card = nameEl.closest('a').parentElement.parentElement.parentElement.parentElement;
-          const children = Array.from(card.children);
-
-          const name = nameEl.innerText.trim();
-          const title = children[1]?.innerText.trim() || '';
-          const company = children[2]?.innerText.trim().split(' · ')[0] || '';
-          const location = children[3]?.innerText.trim().split('\n')[0] || '';
-          const linkedinUrl = window.location.href.split('?')[0];
-
-          return { name, title, company, location, linkedinUrl };
+          return new Promise((resolve) => {
+            let attempts = 0;
+            const interval = setInterval(() => {
+              const nameEl = document.querySelector('a[href*="/in/"] h2');
+              attempts++;
+              if (nameEl || attempts >= 10) {
+                clearInterval(interval);
+                if (!nameEl) { resolve({ error: 'Profile card not found' }); return; }
+                const card = nameEl.closest('a').parentElement.parentElement.parentElement.parentElement;
+                const children = Array.from(card.children);
+                const name = nameEl.innerText.trim();
+                const title = children[1]?.innerText.trim() || '';
+                const company = children[2]?.innerText.trim().split(' · ')[0] || '';
+                const location = children[3]?.innerText.trim().split('\n')[0] || '';
+                const linkedinUrl = window.location.href.split('?')[0];
+                resolve({ name, title, company, location, linkedinUrl });
+              }
+            }, 300);
+          });
         },
       },
       (results) => {
