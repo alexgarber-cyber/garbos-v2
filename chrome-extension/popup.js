@@ -153,21 +153,28 @@ async function init() {
   // 3. Ask background service worker to scrape the active tab
   let response;
   try {
+    console.log("[GarbOS] Sending GET_PROFILE...");
     response = await chrome.runtime.sendMessage({ type: "GET_PROFILE" });
+    console.log("[GarbOS] sendMessage response:", response);
   } catch (err) {
+    console.log("[GarbOS] sendMessage threw:", err);
     showNotice("Could not read page. Try reloading the LinkedIn profile.");
     return;
   }
 
   if (!response || !response.ok) {
+    console.log("[GarbOS] Bad response — bailing. response:", response);
     showNotice("Profile data unavailable. Try reloading the LinkedIn profile.");
     return;
   }
 
   profile = response.data;
+  console.log("[GarbOS] profile data:", profile);
 
   // 4. Render profile fields
-  fName.textContent     = profile.name || "(unknown)";
+  const nameVal = profile.name || "(unknown)";
+  console.log("[GarbOS] Setting name field:", nameVal);
+  fName.textContent     = nameVal;
   fTitle.textContent    = profile.title    || "—";
   fCompany.textContent  = profile.company  || "—";
   fLocation.textContent = profile.location || "—";
