@@ -157,58 +157,60 @@ async function init() {
   fLocation.textContent = "Loading...";
 
   console.log("[GarbOS] Sending GET_PROFILE...");
-  chrome.runtime.sendMessage({ type: "GET_PROFILE" }, async (response) => {
-    if (chrome.runtime.lastError) {
-      console.error("[GarbOS] lastError:", chrome.runtime.lastError.message);
-      showNotice("Could not read page. Try reloading the LinkedIn profile.");
-      return;
-    }
-    console.log("[GarbOS] sendMessage response:", response);
-    if (!response || !response.ok) {
-      console.log("[GarbOS] Bad response — bailing. response:", response);
-      showNotice("Profile data unavailable. Try reloading the LinkedIn profile.");
-      return;
-    }
-
-    profile = response.data;
-    console.log("[GarbOS] profile data:", profile);
-
-    // 4. Render profile fields
-    const nameVal = profile.name || "(unknown)";
-    console.log("[GarbOS] Setting name field:", nameVal);
-    fName.textContent     = nameVal;
-    fTitle.textContent    = profile.title    || "—";
-    fCompany.textContent  = profile.company  || "—";
-    fLocation.textContent = profile.location || "—";
-
-    const url = profile.linkedinUrl;
-    if (url) {
-      const a = document.createElement("a");
-      a.href = url;
-      a.target = "_blank";
-      a.textContent = url.replace("https://www.linkedin.com/in/", "linkedin.com/in/");
-      fUrl.innerHTML = "";
-      fUrl.appendChild(a);
-    } else {
-      fUrl.textContent = "—";
-    }
-
-    showProfile();
-
-    // 5. Duplicate check
-    if (url) {
-      const existing = await checkDuplicate(url);
-      if (existing) {
-        const role = existing.lifecycle_status === "Lead" ? "Prospect" : "Contact";
-        const name = [existing.first_name, existing.last_name].filter(Boolean).join(" ");
-        dupTitle.textContent  = `Already in GarbOS as a ${role}`;
-        dupDetail.textContent = name ? `Name on record: ${name}` : "";
-        dupWarning.style.display = "";
+  setTimeout(() => {
+    chrome.runtime.sendMessage({ type: "GET_PROFILE" }, async (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("[GarbOS] lastError:", chrome.runtime.lastError.message);
+        showNotice("Could not read page. Try reloading the LinkedIn profile.");
+        return;
       }
-    }
+      console.log("[GarbOS] sendMessage response:", response);
+      if (!response || !response.ok) {
+        console.log("[GarbOS] Bad response — bailing. response:", response);
+        showNotice("Profile data unavailable. Try reloading the LinkedIn profile.");
+        return;
+      }
 
-    setButtons(true);
-  });
+      profile = response.data;
+      console.log("[GarbOS] profile data:", profile);
+
+      // 4. Render profile fields
+      const nameVal = profile.name || "(unknown)";
+      console.log("[GarbOS] Setting name field:", nameVal);
+      fName.textContent     = nameVal;
+      fTitle.textContent    = profile.title    || "—";
+      fCompany.textContent  = profile.company  || "—";
+      fLocation.textContent = profile.location || "—";
+
+      const url = profile.linkedinUrl;
+      if (url) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.textContent = url.replace("https://www.linkedin.com/in/", "linkedin.com/in/");
+        fUrl.innerHTML = "";
+        fUrl.appendChild(a);
+      } else {
+        fUrl.textContent = "—";
+      }
+
+      showProfile();
+
+      // 5. Duplicate check
+      if (url) {
+        const existing = await checkDuplicate(url);
+        if (existing) {
+          const role = existing.lifecycle_status === "Lead" ? "Prospect" : "Contact";
+          const name = [existing.first_name, existing.last_name].filter(Boolean).join(" ");
+          dupTitle.textContent  = `Already in GarbOS as a ${role}`;
+          dupDetail.textContent = name ? `Name on record: ${name}` : "";
+          dupWarning.style.display = "";
+        }
+      }
+
+      setButtons(true);
+    });
+  }, 200);
 }
 
 // ── Add as Prospect ───────────────────────────────────────────────────────────
