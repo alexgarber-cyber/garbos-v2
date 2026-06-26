@@ -167,8 +167,7 @@ async function init() {
   profile = response.data;
 
   // 4. Render profile fields
-  const fullName = [profile.firstName, profile.lastName].filter(Boolean).join(" ");
-  fName.textContent     = fullName     || "(unknown)";
+  fName.textContent     = profile.name || "(unknown)";
   fTitle.textContent    = profile.title    || "—";
   fCompany.textContent  = profile.company  || "—";
   fLocation.textContent = profile.location || "—";
@@ -212,11 +211,13 @@ btnProspect.addEventListener("click", async () => {
   setButtons(false);
   resultDiv.textContent = "";
   try {
+    const [firstName, ...rest] = (profile.name || "Unknown").split(" ");
+    const lastName = rest.join(" ");
     await apiFetch("/leads", {
       method: "POST",
       body: JSON.stringify({
-        first_name:   profile.firstName || profile.fullName || "Unknown",
-        last_name:    profile.lastName  || null,
+        first_name:   firstName,
+        last_name:    lastName || null,
         title:        profile.title     || null,
         company_name: profile.company,
         linkedin_url: profile.linkedinUrl || null,
@@ -236,11 +237,13 @@ btnContact.addEventListener("click", async () => {
   setButtons(false);
   resultDiv.textContent = "";
   try {
+    const [firstName, ...rest] = (profile.name || "Unknown").split(" ");
+    const lastName = rest.join(" ");
     await apiFetch("/contacts", {
       method: "POST",
       body: JSON.stringify({
-        first_name:   profile.firstName || profile.fullName || "Unknown",
-        last_name:    profile.lastName  || null,
+        first_name:   firstName,
+        last_name:    lastName || null,
         title:        profile.title     || null,
         linkedin_url: profile.linkedinUrl || null,
       }),
