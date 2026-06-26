@@ -150,10 +150,10 @@ async function init() {
     return;
   }
 
-  // 3. Ask content script for profile data
+  // 3. Ask background service worker to scrape the active tab
   let response;
   try {
-    response = await chrome.tabs.sendMessage(tab.id, { type: "GET_PROFILE" });
+    response = await chrome.runtime.sendMessage({ type: "GET_PROFILE" });
   } catch (err) {
     showNotice("Could not read page. Try reloading the LinkedIn profile.");
     return;
