@@ -3,7 +3,7 @@
   "name": "GarbOS LinkedIn Importer",
   "version": "1.0.0",
   "description": "Import LinkedIn profiles into GarbOS with one click.",
-  "permissions": ["activeTab", "storage", "scripting"],
+  "permissions": ["activeTab", "tabs", "storage", "scripting"],
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://garbos.io/*"
