@@ -136,17 +136,31 @@ async function checkDuplicate(linkedinUrl) {
 // Injected into the LinkedIn page via chrome.scripting (world: MAIN). Serialized
 // and run in the page context — must be fully self-contained, no outer refs.
 function scrapeProfile() {
-  const nameEl = document.querySelector('a[href*="/in/"] h2');
-  if (!nameEl) return { error: 'Profile card not found' };
-  const card = nameEl.closest('a').parentElement.parentElement.parentElement.parentElement;
-  const children = Array.from(card.children);
-  return {
-    name: nameEl.innerText.trim(),
-    title: children[1]?.innerText.trim() || '',
-    company: children[2]?.innerText.trim().split(' · ')[0] || '',
-    location: children[3]?.innerText.trim().split('\n')[0] || '',
-    linkedinUrl: window.location.href.split('?')[0]
-  };
+  return new Promise((resolve) => {
+    let attempts = 0;
+    const tick = () => {
+      const nameEl = document.querySelector('a[href*="/in/"] h2');
+      attempts++;
+      if ((nameEl && nameEl.innerText.trim()) || attempts >= 20) {
+        if (!nameEl || !nameEl.innerText.trim()) {
+          resolve({ error: 'Profile name not found' });
+          return;
+        }
+        const card = nameEl.closest('a').parentElement.parentElement.parentElement.parentElement;
+        const children = Array.from(card.children);
+        resolve({
+          name: nameEl.innerText.trim(),
+          title: children[1]?.innerText.trim() || '',
+          company: children[2]?.innerText.trim().split(' · ')[0] || '',
+          location: children[3]?.innerText.trim().split('\n')[0] || '',
+          linkedinUrl: window.location.href.split('?')[0]
+        });
+        return;
+      }
+      setTimeout(tick, 150);
+    };
+    tick();
+  });
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
