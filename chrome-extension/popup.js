@@ -32,7 +32,7 @@ const resultDiv   = document.getElementById("result");
 // ── State ─────────────────────────────────────────────────────────────────────
 let apiUrl = DEFAULT_API_URL;
 let token  = "";
-let profile = null; // scraped profile data
+let profile = null; // stashed scrape result; Add buttons read from this
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function showLoading() {
@@ -48,6 +48,11 @@ function showNotice(msg) {
   actionSection.style.display = "none";
   noticeSection.style.display = "";
   noticeText.textContent = msg;
+}
+
+// showError reuses the notice element to surface scrape/injection failures.
+function showError(msg) {
+  showNotice(msg);
 }
 
 function showProfile() {
@@ -127,6 +132,44 @@ async function checkDuplicate(linkedinUrl) {
   }
 }
 
+// ── Scraper ───────────────────────────────────────────────────────────────────
+// Injected into the LinkedIn page via chrome.scripting (world: MAIN). Serialized
+// and run in the page context — must be fully self-contained, no outer refs.
+function scrapeProfile() {
+  const nameEl = document.querySelector('a[href*="/in/"] h2');
+  if (!nameEl) return { error: 'Profile card not found' };
+  const card = nameEl.closest('a').parentElement.parentElement.parentElement.parentElement;
+  const children = Array.from(card.children);
+  return {
+    name: nameEl.innerText.trim(),
+    title: children[1]?.innerText.trim() || '',
+    company: children[2]?.innerText.trim().split(' · ')[0] || '',
+    location: children[3]?.innerText.trim().split('\n')[0] || '',
+    linkedinUrl: window.location.href.split('?')[0]
+  };
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderProfile(data) {
+  console.log('[GarbOS] rendering:', data);
+  fName.textContent     = data.name     || "(unknown)";
+  fTitle.textContent    = data.title    || "—";
+  fCompany.textContent  = data.company  || "—";
+  fLocation.textContent = data.location || "—";
+
+  const url = data.linkedinUrl;
+  if (url) {
+    const a = document.createElement("a");
+    a.href = url;
+    a.target = "_blank";
+    a.textContent = url.replace("https://www.linkedin.com/in/", "linkedin.com/in/");
+    fUrl.innerHTML = "";
+    fUrl.appendChild(a);
+  } else {
+    fUrl.textContent = "—";
+  }
+}
+
 // ── Main init ─────────────────────────────────────────────────────────────────
 async function init() {
   showLoading();
@@ -143,61 +186,37 @@ async function init() {
 
   settingsBar.style.display = "";
 
-  // 2. Check active tab is a LinkedIn profile
+  // 2. Confirm the active tab is a LinkedIn profile
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab || !tab.url || !tab.url.match(/^https:\/\/www\.linkedin\.com\/in\//)) {
-    showNotice("Navigate to a LinkedIn profile (linkedin.com/in/…) and try again.");
+  if (!tab || !tab.url || !tab.url.includes("linkedin.com/in/")) {
+    showError("Open a LinkedIn profile (linkedin.com/in/…) first.");
     return;
   }
 
-  // 3. Ask background service worker to scrape the active tab
-  fName.textContent     = "Loading...";
-  fTitle.textContent    = "Loading...";
-  fCompany.textContent  = "Loading...";
-  fLocation.textContent = "Loading...";
-
-  console.log("[GarbOS] Sending GET_PROFILE...");
-  chrome.tabs.sendMessage(tab.id, { type: "GET_PROFILE" }, async (response) => {
+  // 3. Inject the scraper directly into the page and read the result here.
+  //    No content script, no service worker, no sendMessage.
+  chrome.scripting.executeScript(
+    { target: { tabId: tab.id }, world: "MAIN", func: scrapeProfile },
+    async (results) => {
       if (chrome.runtime.lastError) {
-        console.error("[GarbOS] lastError:", chrome.runtime.lastError.message);
-        showNotice("Could not read page. Try reloading the LinkedIn profile.");
+        console.log("[GarbOS] executeScript error:", chrome.runtime.lastError.message);
+        showError(chrome.runtime.lastError.message);
         return;
       }
-      console.log("[GarbOS] sendMessage response:", response);
-      if (!response || !response.ok) {
-        console.log("[GarbOS] Bad response — bailing. response:", response);
-        showNotice("Profile data unavailable. Try reloading the LinkedIn profile.");
+      const data = results && results[0] && results[0].result;
+      console.log("[GarbOS] scrape result:", data);
+      if (!data || data.error) {
+        showError(data?.error || "Could not read profile.");
         return;
       }
 
-      profile = response.data;
-      console.log("[GarbOS] profile data:", profile);
-
-      // 4. Render profile fields
-      const nameVal = profile.name || "(unknown)";
-      console.log("[GarbOS] Setting name field:", nameVal);
-      fName.textContent     = nameVal;
-      fTitle.textContent    = profile.title    || "—";
-      fCompany.textContent  = profile.company  || "—";
-      fLocation.textContent = profile.location || "—";
-
-      const url = profile.linkedinUrl;
-      if (url) {
-        const a = document.createElement("a");
-        a.href = url;
-        a.target = "_blank";
-        a.textContent = url.replace("https://www.linkedin.com/in/", "linkedin.com/in/");
-        fUrl.innerHTML = "";
-        fUrl.appendChild(a);
-      } else {
-        fUrl.textContent = "—";
-      }
-
+      profile = data;
+      renderProfile(data);
       showProfile();
 
-      // 5. Duplicate check
-      if (url) {
-        const existing = await checkDuplicate(url);
+      // Duplicate check + enable Add buttons
+      if (data.linkedinUrl) {
+        const existing = await checkDuplicate(data.linkedinUrl);
         if (existing) {
           const role = existing.lifecycle_status === "Lead" ? "Prospect" : "Contact";
           const name = [existing.first_name, existing.last_name].filter(Boolean).join(" ");
@@ -208,7 +227,8 @@ async function init() {
       }
 
       setButtons(true);
-    });
+    }
+  );
 }
 
 // ── Add as Prospect ───────────────────────────────────────────────────────────
